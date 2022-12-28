@@ -3816,9 +3816,32 @@ export function initVim(CodeMirror) {
       var cur = cm.getCursor();
       var start = cur.ch;
       var idx;
+      var fullwidth_characters = {
+          '.' : '。',
+          ',' : '，',
+          ':' : '：',
+          '"' : '“',
+          '[' : '「',
+          ']' : '」',
+          '(' : '（',
+          ')' : '）'
+      }
       for (var i = 0; i < repeat; i ++) {
         var line = cm.getLine(cur.line);
         idx = charIdxInLine(start, line, character, forward, true);
+       
+        if (character.length == 1 && fullwidth_characters[character]) {
+            var fullwidth_character = fullwidth_characters[character];
+            var fullwidth_idx = charIdxInLine(start, line, fullwidth_character, forward, true);
+            
+            if (fullwidth_idx == -1) {
+                idx = idx;
+            } else if (idx == -1) {
+                idx = fullwidth_idx;
+            } else {
+                idx = forward ? Math.min(idx, fullwidth_idx) : Math.max(idx, fullwidth_idx);
+            }
+        }
         if (idx == -1) {
           return null;
         }
